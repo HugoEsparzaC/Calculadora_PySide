@@ -53,6 +53,9 @@ class Calculadora(QMainWindow):
         for texto_boton, boton in self.botones.items():
             if texto_boton not in {'=', 'C'}:
                 boton.clicked.connect(partial(self._construir_expresion, texto_boton))
+            self.botones['C'].clicked.connect(self._limpiar_linea_entrada)
+            self.botones['='].clicked.connect(self._calcular_resultado)
+            self.linea_entrada.returnPressed.connect(self._calcular_resultado)
 
     def _construir_expresion(self, texto_boton):
         expresion = self.obtener_texto() + texto_boton
@@ -65,8 +68,19 @@ class Calculadora(QMainWindow):
         self.linea_entrada.setText(texto)
         self.linea_entrada.setFocus()
 
-    def limpiar_linea_entrada(self):
+    def _limpiar_linea_entrada(self):
         self.actualizar_texto('')
+
+    def _calcular_resultado(self):
+        resultado = self._evaluar_expresion(self.obtener_texto())
+        self.actualizar_texto(resultado)
+
+    def _evaluar_expresion(self, expresion):
+        try:
+            resultado = str(eval(expresion))
+        except Exception as e:
+            resultado = 'Ocurrio un error'
+        return resultado
 
 if __name__ == '__main__':
     app = QApplication()
