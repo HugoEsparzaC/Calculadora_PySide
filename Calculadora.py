@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QLineEdit, QPushButton, QGridLayout, QApplication, QWidget, QVBoxLayout
 from PySide6.QtCore import Qt
+from functools import partial
 class Calculadora(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -11,6 +12,7 @@ class Calculadora(QMainWindow):
         self.componente_general.setLayout(self.layout_principal)
         self._crear_area_captura()
         self._crear_botones()
+        self._conectar_botones()
 
     def _crear_area_captura(self):
         self.linea_entrada = QLineEdit()
@@ -22,7 +24,7 @@ class Calculadora(QMainWindow):
     def _crear_botones(self):
         self.botones = {}
         layout_botones = QGridLayout()
-        botones = {
+        self.botones = {
             '7':(0,0),
             '8':(0,1),
             '9':(0,2),
@@ -41,11 +43,30 @@ class Calculadora(QMainWindow):
             '+':(3,3),
             '=':(3,4)
         }
-        for texto_boton, posicion in botones.items():
+        for texto_boton, posicion in self.botones.items():
             self.botones[texto_boton] = QPushButton(texto_boton)
             self.botones[texto_boton].setFixedSize(40,40)
             layout_botones.addWidget(self.botones[texto_boton], posicion[0], posicion[1])
         self.layout_principal.addLayout(layout_botones)
+
+    def _conectar_botones(self):
+        for texto_boton, boton in self.botones.items():
+            if texto_boton not in {'=', 'C'}:
+                boton.clicked.connect(partial(self._construir_expresion, texto_boton))
+
+    def _construir_expresion(self, texto_boton):
+        expresion = self.obtener_texto() + texto_boton
+        self.actualizar_texto(expresion)
+
+    def obtener_texto(self):
+        return self.linea_entrada.text()
+
+    def actualizar_texto(self, texto):
+        self.linea_entrada.setText(texto)
+        self.linea_entrada.setFocus()
+
+    def limpiar_linea_entrada(self):
+        self.actualizar_texto('')
 
 if __name__ == '__main__':
     app = QApplication()
